@@ -15,13 +15,38 @@
             <div class="score-container">
                 <span>Score: </span>
                 <span id="score">0</span>
+                <button id="pause-btn" class="pause-btn">⏸</button>
             </div>
         </div>
         <canvas id="game-board" width="400" height="400"></canvas>
-        <div id="nav-prompt" class="nav-prompt">Press Navigation key to start the game</div>
+        <div id="nav-prompt" class="nav-prompt">
+            <span class="desktop-prompt">Press Navigation key to start the game</span>
+            <span class="mobile-prompt">Tap here to start the game</span>
+        </div>
         <div class="controls">
             <button id="start-btn">Start</button>
-            <button id="reset-btn">Reset</button>
+        </div>
+        <div class="mobile-controls">
+            <div id="directional-pad" class="directional-pad">
+                <div class="direction-indicator up">▲</div>
+                <div class="direction-indicator left">◀</div>
+                <div class="direction-indicator right">▶</div>
+                <div class="direction-indicator down">▼</div>
+                <div class="center-dot"></div>
+            </div>
+        </div>
+        <div class="speed-modal" id="speed-modal">
+            <div class="speed-modal-content">
+                <h3>Choose Game Speed</h3>
+                <div class="speed-controls">
+                    <button class="speed-btn" data-speed="0.2">0.2x</button>
+                    <button class="speed-btn" data-speed="0.5">0.5x</button>
+                    <button class="speed-btn active" data-speed="1">1x</button>
+                    <button class="speed-btn" data-speed="2">2x</button>
+                    <button class="speed-btn" data-speed="3">3x</button>
+                </div>
+                <button id="start-game-btn" class="start-game-btn">Start Game</button>
+            </div>
         </div>
         <div class="game-over" id="game-over">
             <h2>Game Over!</h2>

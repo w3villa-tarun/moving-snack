@@ -6,8 +6,8 @@ const finalScoreElement = document.getElementById('final-score');
 const gameOverElement = document.getElementById('game-over');
 const navPromptElement = document.getElementById('nav-prompt');
 const startButton = document.getElementById('start-btn');
-const resetButton = document.getElementById('reset-btn');
 const restartButton = document.getElementById('restart-btn');
+const pauseButton = document.getElementById('pause-btn');
 
 // Background canvas for effects
 const bgCanvas = document.getElementById('background-canvas');
@@ -36,7 +36,9 @@ function initBackgroundEffects() {
 // Game settings
 const gridSize = 20;
 const tileCount = canvas.width / gridSize;
-let speed = 7; // frames per second
+let baseSpeed = 7; // base frames per second (1x speed)
+let speedMultiplier = 1; // current speed multiplier (0.2x to 3x)
+let speed = baseSpeed; // current frames per second
 
 // Game state
 let gameRunning = false;
@@ -53,13 +55,131 @@ let velocityY = 0;
 let foodX = 5;
 let foodY = 5;
 
+// Get speed modal elements
+const speedModal = document.getElementById('speed-modal');
+const startGameBtn = document.getElementById('start-game-btn');
+
 // Event listeners
-startButton.addEventListener('click', startGame);
-resetButton.addEventListener('click', resetGame);
+startButton.addEventListener('click', showSpeedModal);
 restartButton.addEventListener('click', resetGame);
+startGameBtn.addEventListener('click', startGameWithSpeed);
+pauseButton.addEventListener('click', pauseGame);
+
+// Make navigation prompt clickable on mobile
+navPromptElement.addEventListener('click', function() {
+    if (window.innerWidth <= 767 && !gameRunning) {
+        showSpeedModal();
+    }
+});
 
 // Keyboard controls
 document.addEventListener('keydown', changeDirection);
+
+// Mobile controls
+const mobileControls = document.querySelector('.mobile-controls');
+const directionalPad = document.getElementById('directional-pad');
+
+// Speed controls
+const speedButtons = document.querySelectorAll('.speed-btn');
+
+// Add event listeners for speed buttons
+speedButtons.forEach(button => {
+    button.addEventListener('click', handleSpeedChange);
+});
+
+function handleSpeedChange(e) {
+    const newSpeedMultiplier = parseFloat(e.target.dataset.speed);
+    
+    // Remove active class from all buttons
+    speedButtons.forEach(btn => btn.classList.remove('active'));
+    
+    // Add active class to clicked button
+    e.target.classList.add('active');
+    
+    // Update speed multiplier and calculate new speed
+    speedMultiplier = newSpeedMultiplier;
+    speed = Math.floor(baseSpeed * speedMultiplier);
+    
+    // Ensure minimum speed of 1
+    if (speed < 1) speed = 1;
+}
+
+function showSpeedModal() {
+    speedModal.style.display = 'block';
+    navPromptElement.style.display = 'none';
+}
+
+function startGameWithSpeed() {
+    speedModal.style.display = 'none';
+    startGame();
+}
+
+// Add touch and click event listeners for directional pad
+directionalPad.addEventListener('touchstart', handleDirectionalPadTouch);
+directionalPad.addEventListener('click', handleDirectionalPadClick);
+
+function handleDirectionalPadTouch(e) {
+    e.preventDefault();
+    const direction = getDirectionFromTouch(e);
+    if (direction) {
+        highlightDirection(direction);
+        handleMobileDirection(direction);
+    }
+}
+
+function handleDirectionalPadClick(e) {
+    e.preventDefault();
+    const direction = getDirectionFromClick(e);
+    if (direction) {
+        highlightDirection(direction);
+        handleMobileDirection(direction);
+    }
+}
+
+function getDirectionFromTouch(e) {
+    return getDirectionFromCoordinates(e.touches[0].clientX, e.touches[0].clientY);
+}
+
+function getDirectionFromClick(e) {
+    return getDirectionFromCoordinates(e.clientX, e.clientY);
+}
+
+function getDirectionFromCoordinates(clientX, clientY) {
+    const rect = directionalPad.getBoundingClientRect();
+    const centerX = rect.left + rect.width / 2;
+    const centerY = rect.top + rect.height / 2;
+    
+    const x = clientX - centerX;
+    const y = clientY - centerY;
+    
+    // Determine which quadrant the touch/click is in
+    const threshold = 20; // Minimum distance from center
+    
+    if (Math.abs(x) < threshold && Math.abs(y) < threshold) {
+        return null; // Too close to center
+    }
+    
+    if (Math.abs(x) > Math.abs(y)) {
+        // Horizontal movement
+        return x > 0 ? 'right' : 'left';
+    } else {
+        // Vertical movement
+        return y > 0 ? 'down' : 'up';
+    }
+}
+
+function highlightDirection(direction) {
+    // Remove all highlight classes
+    directionalPad.classList.remove('highlight-up', 'highlight-down', 'highlight-left', 'highlight-right');
+    
+    // Add the appropriate highlight class
+    directionalPad.classList.add(`highlight-${direction}`);
+    
+    // Remove highlight after a short delay
+    setTimeout(() => {
+        directionalPad.classList.remove(`highlight-${direction}`);
+    }, 200);
+}
 
 // Initialize game
 function init() {
@@ -68,27 +188,30 @@ function init() {
 
 // Start or pause game
 function startGame() {
-    if (!gameRunning) {
-        // Start the game
-        gameRunning = true;
-        // Hide navigation prompt when game starts
-        navPromptElement.style.display = 'none';
-        // Change button text to "Pause"
-        startButton.textContent = 'Pause';
-        gameLoop();
-    } else {
-        // Pause the game
-        pauseGame();
+    // Start the game
+    gameRunning = true;
+    // Hide navigation prompt when game starts
+    navPromptElement.style.display = 'none';
+    // Hide start button and show pause button
+    startButton.style.display = 'none';
+    pauseButton.classList.add('show');
+    // Show mobile controls on mobile devices when game starts
+    if (window.innerWidth <= 767) {
+        mobileControls.classList.add('show');
     }
+    gameLoop();
 }
 
 // Pause game
 function pauseGame() {
     gameRunning = false;
-    // Change button text back to "Start"
-    startButton.textContent = 'Start';
+    // Show start button and hide pause button
+    startButton.style.display = 'block';
+    pauseButton.classList.remove('show');
     // Show navigation prompt when game is paused
     navPromptElement.style.display = 'block';
+    // Hide mobile controls when paused
+    mobileControls.classList.remove('show');
 }
 
 // Reset game
@@ -102,6 +225,11 @@ function resetGame() {
     score = 0;
     scoreElement.textContent = score;
     
+    // Reset speed to base values
+    baseSpeed = 7;
+    speed = Math.floor(baseSpeed * speedMultiplier);
+    if (speed < 1) speed = 1;
+    
     // Reset food
     placeFood();
     
@@ -111,13 +239,18 @@ function resetGame() {
     // Show navigation prompt
     navPromptElement.style.display = 'block';
     
+    // Hide speed modal and mobile controls
+    speedModal.style.display = 'none';
+    mobileControls.classList.remove('show');
+    
     // Background animations removed for performance
     
     // Reset game state
     gameRunning = false;
     
-    // Reset button text to 'Start'
-    startButton.textContent = 'Start';
+    // Show start button and hide pause button
+    startButton.style.display = 'block';
+    pauseButton.classList.remove('show');
     
     // Draw initial state
     drawGame();
@@ -199,9 +332,11 @@ function moveSnake() {
         // Place new food
         placeFood();
         
-        // Increase speed slightly every 5 food items
+        // Increase base speed slightly every 5 food items, but keep multiplier effect
         if (score % 50 === 0) {
-            speed += 1;
+            baseSpeed += 0.5;
+            speed = Math.floor(baseSpeed * speedMultiplier);
+            if (speed < 1) speed = 1;
         }
     } else {
         // Remove tail if snake didn't eat food
@@ -361,6 +496,48 @@ function placeFood() {
     }
 }
 
+// Handle mobile direction input
+function handleMobileDirection(direction) {
+    // If game is not running, start the game
+    if (!gameRunning) {
+        startGame();
+    }
+    
+    // Prevent reverse direction (snake can't go in reverse)
+    const goingUp = velocityY === -1;
+    const goingDown = velocityY === 1;
+    const goingLeft = velocityX === -1;
+    const goingRight = velocityX === 1;
+    
+    // Change direction based on mobile button press
+    switch (direction) {
+        case 'up':
+            if (!goingDown) {
+                velocityX = 0;
+                velocityY = -1;
+            }
+            break;
+        case 'down':
+            if (!goingUp) {
+                velocityX = 0;
+                velocityY = 1;
+            }
+            break;
+        case 'left':
+            if (!goingRight) {
+                velocityX = -1;
+                velocityY = 0;
+            }
+            break;
+        case 'right':
+            if (!goingLeft) {
+                velocityX = 1;
+                velocityY = 0;
+            }
+            break;
+    }
+}
+
 // Change snake direction based on key press
 function changeDirection(event) {
     // If game is not running and arrow key is pressed, start the game
@@ -430,9 +607,13 @@ function gameOver() {
     gameOverElement.style.display = 'block';
     // Hide navigation prompt during game over screen
     navPromptElement.style.display = 'none';
+    // Hide mobile controls and speed modal during game over
+    mobileControls.classList.remove('show');
+    speedModal.style.display = 'none';
     
-    // Reset button text to "Start"
-    startButton.textContent = 'Start';
+    // Show start button and hide pause button
+    startButton.style.display = 'block';
+    pauseButton.classList.remove('show');
 }
 
 // Draw game
