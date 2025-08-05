@@ -1,0 +1,420 @@
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    font-family: 'Rajdhani', sans-serif;
+}
+
+body {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 100vh;
+    background-color: #0a0a12;
+    color: #e0e0e0;
+    overflow: hidden;
+    position: relative;
+}
+
+#background-canvas {
+    /* Background canvas hidden - animations removed for performance */
+    display: none;
+}
+
+.game-container {
+    background-color: rgba(15, 15, 25, 0.5);
+    border-radius: 15px;
+    box-shadow: 0 0 30px rgba(0, 255, 255, 0.2);
+    border: 1px solid rgba(0, 255, 255, 0.3);
+    padding: 25px;
+    text-align: center;
+    max-width: 500px;
+    width: 100%;
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    position: relative;
+    z-index: 1;
+    overflow: hidden;
+    transform-style: preserve-3d;
+}
+
+.game-container::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: linear-gradient(135deg, rgba(0, 255, 255, 0.1) 0%, rgba(0, 0, 0, 0) 100%);
+    z-index: -1;
+    pointer-events: none;
+    border-radius: 15px;
+}
+
+.game-container::after {
+    content: '';
+    position: absolute;
+    top: -50%;
+    left: -50%;
+    right: -50%;
+    bottom: -50%;
+    background: radial-gradient(circle, rgba(0, 255, 255, 0.1) 0%, rgba(0, 0, 0, 0) 70%);
+    z-index: -1;
+    pointer-events: none;
+    opacity: 0.5;
+    animation: pulse-glow 8s infinite;
+}
+
+@keyframes pulse-glow {
+    0% { opacity: 0.3; transform: scale(1); }
+    50% { opacity: 0.6; transform: scale(1.02); }
+    100% { opacity: 0.3; transform: scale(1); }
+}
+
+.game-header {
+    margin-bottom: 25px;
+    position: relative;
+}
+
+h1 {
+    color: #00ffff;
+    margin-bottom: 15px;
+    text-shadow: 0 0 15px rgba(0, 255, 255, 0.7);
+    font-size: 2.5rem;
+    letter-spacing: 3px;
+    font-family: 'Orbitron', sans-serif;
+    font-weight: 700;
+    text-transform: uppercase;
+}
+
+.score-container {
+    font-size: 1.3rem;
+    font-weight: 600;
+    color: #ffffff;
+    background-color: rgba(0, 0, 0, 0.4);
+    display: inline-block;
+    padding: 8px 20px;
+    border-radius: 20px;
+    border: 1px solid rgba(0, 255, 255, 0.3);
+    box-shadow: 0 0 15px rgba(0, 255, 255, 0.2);
+    letter-spacing: 1px;
+    position: relative;
+    overflow: hidden;
+}
+
+.score-container::before {
+    content: '';
+    position: absolute;
+    top: -10px;
+    left: -10px;
+    right: -10px;
+    bottom: -10px;
+    background: linear-gradient(45deg, rgba(0, 255, 255, 0.1), rgba(0, 0, 0, 0));
+    z-index: -1;
+    animation: rotate-gradient 8s linear infinite;
+}
+
+@keyframes rotate-gradient {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+
+#game-board {
+    border: 2px solid rgba(0, 255, 255, 0.4);
+    background-color: rgba(10, 10, 20, 0.6);
+    margin: 0 auto 15px;
+    display: block;
+    box-shadow: 0 0 25px rgba(0, 255, 255, 0.3);
+    border-radius: 8px;
+    position: relative;
+    z-index: 2;
+    animation: rotate-3d 8s infinite ease-in-out, float 6s infinite ease-in-out;
+    transform-style: preserve-3d;
+}
+
+#game-board::before {
+    content: '';
+    position: absolute;
+    top: -2px;
+    left: -2px;
+    right: -2px;
+    bottom: -2px;
+    background: linear-gradient(45deg, rgba(0, 255, 255, 0.5), rgba(0, 128, 255, 0.5), rgba(255, 0, 255, 0.5), rgba(0, 255, 255, 0.5));
+    z-index: -1;
+    border-radius: 10px;
+    filter: blur(8px);
+    opacity: 0.5;
+    animation: border-glow 8s linear infinite;
+}
+
+@keyframes border-glow {
+    0% { opacity: 0.5; transform: translateX(-100%); }
+    50% { opacity: 0.8; }
+    100% { opacity: 0.5; transform: translateX(100%); }
+}
+
+@keyframes rotate-3d {
+    0% { transform: perspective(1000px) rotateX(0deg) rotateY(0deg); }
+    50% { transform: perspective(1000px) rotateX(5deg) rotateY(5deg); }
+    100% { transform: perspective(1000px) rotateX(0deg) rotateY(0deg); }
+}
+
+@keyframes float {
+    0% { transform: translateY(0px); }
+    50% { transform: translateY(-10px); }
+    100% { transform: translateY(0px); }
+}
+
+.shake {
+    animation: shake 0.5s cubic-bezier(.36,.07,.19,.97) both;
+}
+
+@keyframes shake {
+    0%, 100% { transform: translateX(0); }
+    10%, 30%, 50%, 70%, 90% { transform: translateX(-5px); }
+    20%, 40%, 60%, 80% { transform: translateX(5px); }
+}
+
+.nav-prompt {
+    font-size: 1.3rem;
+    color: #00ffff;
+    font-weight: 600;
+    margin-bottom: 20px;
+    padding: 12px 20px;
+    animation: blink 1.5s infinite;
+    text-shadow: 0 0 10px rgba(0, 255, 255, 0.8);
+    background-color: rgba(0, 0, 0, 0.4);
+    border-radius: 8px;
+    letter-spacing: 2px;
+    display: inline-block;
+    font-family: 'Orbitron', sans-serif;
+    border: 1px solid rgba(0, 255, 255, 0.3);
+    position: relative;
+    overflow: hidden;
+}
+
+.nav-prompt::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(0, 255, 255, 0.2), transparent);
+    animation: nav-shine 3s infinite;
+}
+
+@keyframes nav-shine {
+    0% { left: -100%; }
+    20% { left: 100%; }
+    100% { left: 100%; }
+}
+
+@keyframes blink {
+    0% { opacity: 0.3; text-shadow: 0 0 5px rgba(0, 255, 255, 0.3); box-shadow: 0 0 5px rgba(0, 255, 255, 0.3); }
+    50% { opacity: 1; text-shadow: 0 0 20px rgba(0, 255, 255, 1); box-shadow: 0 0 20px rgba(0, 255, 255, 0.5); }
+    100% { opacity: 0.3; text-shadow: 0 0 5px rgba(0, 255, 255, 0.3); box-shadow: 0 0 5px rgba(0, 255, 255, 0.3); }
+}
+
+.controls {
+    margin-bottom: 20px;
+    display: flex;
+    justify-content: center;
+    gap: 15px;
+}
+
+button {
+    background-color: rgba(0, 40, 60, 0.7);
+    border: 1px solid rgba(0, 255, 255, 0.4);
+    color: #ffffff;
+    padding: 12px 30px;
+    text-align: center;
+    text-decoration: none;
+    display: inline-block;
+    font-size: 16px;
+    margin: 6px 4px;
+    cursor: pointer;
+    border-radius: 8px;
+    transition: all 0.3s;
+    text-shadow: 0 0 8px rgba(0, 255, 255, 0.7);
+    box-shadow: 0 0 15px rgba(0, 255, 255, 0.3);
+    letter-spacing: 2px;
+    font-weight: 600;
+    font-family: 'Orbitron', sans-serif;
+    position: relative;
+    overflow: hidden;
+    z-index: 1;
+}
+
+button::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(0, 255, 255, 0.2), transparent);
+    transition: all 0.5s;
+    z-index: -1;
+}
+
+button:hover {
+    background-color: rgba(0, 60, 80, 0.8);
+    box-shadow: 0 0 20px rgba(0, 255, 255, 0.5);
+    transform: translateY(-3px);
+    border-color: rgba(0, 255, 255, 0.7);
+}
+
+button:hover::before {
+    left: 100%;
+    transition: all 0.5s;
+}
+
+#reset-btn {
+    background-color: rgba(60, 0, 60, 0.7);
+    border: 1px solid rgba(255, 0, 255, 0.4);
+    text-shadow: 0 0 8px rgba(255, 0, 255, 0.7);
+    box-shadow: 0 0 15px rgba(255, 0, 255, 0.3);
+}
+
+#reset-btn:hover {
+    background-color: rgba(80, 0, 80, 0.8);
+    box-shadow: 0 0 20px rgba(255, 0, 255, 0.5);
+    border-color: rgba(255, 0, 255, 0.7);
+}
+
+.game-over {
+    display: none;
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    background-color: rgba(10, 10, 20, 0.8);
+    padding: 30px;
+    border-radius: 15px;
+    box-shadow: 0 0 40px rgba(255, 0, 255, 0.4);
+    text-align: center;
+    z-index: 10;
+    border: 1px solid rgba(255, 0, 255, 0.5);
+    backdrop-filter: blur(15px);
+    -webkit-backdrop-filter: blur(15px);
+    min-width: 320px;
+    animation: game-over-appear 0.5s forwards;
+}
+
+@keyframes game-over-appear {
+    from { opacity: 0; transform: translate(-50%, -50%) scale(0.9); }
+    to { opacity: 1; transform: translate(-50%, -50%) scale(1); }
+}
+
+.game-over::before {
+    content: '';
+    position: absolute;
+    top: -2px;
+    left: -2px;
+    right: -2px;
+    bottom: -2px;
+    background: linear-gradient(45deg, rgba(255, 0, 255, 0.5), rgba(255, 0, 128, 0.5), rgba(128, 0, 255, 0.5), rgba(255, 0, 255, 0.5));
+    z-index: -1;
+    border-radius: 17px;
+    filter: blur(8px);
+    opacity: 0.7;
+    animation: border-glow-game-over 4s linear infinite;
+}
+
+@keyframes border-glow-game-over {
+    0% { background-position: 0% 0%; }
+    50% { background-position: 100% 100%; }
+    100% { background-position: 0% 0%; }
+}
+
+.game-over h2 {
+    color: #ff00ff;
+    margin-bottom: 20px;
+    text-shadow: 0 0 15px rgba(255, 0, 255, 0.7);
+    font-size: 2.2rem;
+    letter-spacing: 3px;
+    font-family: 'Orbitron', sans-serif;
+    font-weight: 700;
+    text-transform: uppercase;
+}
+
+.game-over p {
+    margin-bottom: 30px;
+    font-size: 1.4rem;
+    color: #ffffff;
+    letter-spacing: 1px;
+}
+
+#restart-btn {
+    background-color: rgba(0, 40, 80, 0.7);
+    border: 1px solid rgba(0, 200, 255, 0.5);
+    text-shadow: 0 0 8px rgba(0, 200, 255, 0.7);
+    box-shadow: 0 0 20px rgba(0, 200, 255, 0.4);
+    padding: 14px 35px;
+    font-size: 1.1rem;
+}
+
+#restart-btn:hover {
+    background-color: rgba(0, 60, 100, 0.8);
+    box-shadow: 0 0 25px rgba(0, 200, 255, 0.6);
+    border-color: rgba(0, 200, 255, 0.8);
+}
+
+/* Responsive Design */
+@media (max-width: 600px) {
+    .game-container {
+        padding: 15px;
+        max-width: 95%;
+    }
+    
+    h1 {
+        font-size: 2rem;
+    }
+    
+    #game-board {
+        width: 100%;
+        height: auto;
+    }
+    
+    .nav-prompt {
+        font-size: 1rem;
+        padding: 8px 15px;
+    }
+    
+    button {
+        padding: 10px 20px;
+        font-size: 14px;
+    }
+    
+    .game-over {
+        min-width: 280px;
+        padding: 20px;
+    }
+    
+    .game-over h2 {
+        font-size: 1.8rem;
+    }
+}
+
+/* Animations for UI elements */
+@keyframes neon-flicker {
+    0%, 19.999%, 22%, 62.999%, 64%, 64.999%, 70%, 100% {
+        opacity: 0.99;
+        text-shadow: 0 0 10px rgba(0, 255, 255, 0.6), 0 0 20px rgba(0, 255, 255, 0.4), 0 0 30px rgba(0, 255, 255, 0.2);
+    }
+    20%, 21.999%, 63%, 63.999%, 65%, 69.999% {
+        opacity: 0.4;
+        text-shadow: none;
+    }
+}
+
+/* Glassmorphism effect for all panels */
+.glassmorphism {
+    background: rgba(15, 15, 25, 0.5);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    border-radius: 15px;
+    border: 1px solid rgba(0, 255, 255, 0.3);
+    box-shadow: 0 0 20px rgba(0, 255, 255, 0.2);
+}
